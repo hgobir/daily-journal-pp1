@@ -69,7 +69,7 @@ class Journal:
         print(f"{prompt}")
         print()
 
-        print("Start writing (type 'done' on a new line to finish")
+        print("Start writing (type 'done' on a new line to finish)")
 
         lines = []
         while True:
@@ -107,12 +107,12 @@ class Journal:
         char_count = len(entry_content)
 
         print()
-        print("Journal entrey saved!")
+        print("Journal entry saved!")
         print(f" File: {file_path}")
         print(f" Words: {word_count}")
         print(f" Characters: {char_count}")
         if existing_entries > 0:
-            print(f" Entry: {entry_num} of {entry_num} today")
+            print(f" Entry: {entry_num} of {entry_num} today") 
 
     
     def list_entries(self, show_all=False):
@@ -149,32 +149,18 @@ class Journal:
             except:
                 day_name = "Unknown"
 
+            # Count entries and words
+            content = entry_file.read_text()
+            entry_count = content.count("## Entry")
+            word_count = len(content.split())
 
-            # Find context around match
-            content_lower = content.lower()
-            query_lower = query.lower()
+            entry_text = "entry" if entry_count == 1 else "entries"
+            print(f" - {date_str} ({day_name}) - {entry_count} {entry_text}, {word_count} words")
 
-            index = content_lower.find(query_lower)
-
-            # Extract 50 characters before and after
-            start = max(0, index - 50)
-            end = min(len(content), index + len(query) + 50)
-            context = content(start:end)
-
-
-            # Clean up context
-            context = context.replace('\n', ' ').strip()
-            if start > 0:
-                context = "..." + context
-            if end < len(content):
-                context = context + "..."
-
-                matches.append({
-                    'date': date_str,
-                    'day': day_name,
-                    'context': context
-                })
-
+        if limit and len(entries) > limit:
+            print()
+            print(f"Showing {limit} most recent. Use 'journal.py list --all' to see all entries.")
+        
 
 
 
