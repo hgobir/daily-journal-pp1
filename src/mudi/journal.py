@@ -155,11 +155,11 @@ class Journal:
             word_count = len(content.split())
 
             entry_text = "entry" if entry_count == 1 else "entries"
-            print(f" - {date_str} ({day_name}) - {entry_count} {entryu_text}, {word_count} words")
+            print(f" - {date_str} ({day_name}) - {entry_count} {entry_text}, {word_count} words")
 
         if limit and len(entries) > limit:
             print()
-            print(f"Showing {limit}most recent. Use 'journal.py list --all' to see all entries.")
+            print(f"Showing {limit} most recent. Use 'journal.py list --all' to see all entries.")
         
 
 
