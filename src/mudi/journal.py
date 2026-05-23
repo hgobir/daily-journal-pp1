@@ -25,7 +25,7 @@ REFLECTION_PROMPTS = [
 
 class Journal:
     def __init__(self, journal_dir="Journal"):
-        """Initiating and defining the Journal file class"""
+        """Initiating and defining the Journal class filing"""
         self.journal_dir = Path(journal_dir)
         self.journal_dir.mkdir(exist_ok=True)
 
@@ -57,10 +57,10 @@ class Journal:
         file_path = self.get_today_entry()
         existing_entries = 0
         
-        if file_path.exist():
+        if file_path.exists():
             content = file_path.read_text()
             existing_entries = content.count("## 📝 Entry")
-            print("You already have {existing_entries} {'entry' if existing_entries == 1 else 'entries'} today. Adding more!")
+            print("You already have {existing_entries} {'entry' if existing_entries == 1 else 'entries'} today. Add more if you like.")
             print()
 
         # Get random prompt
@@ -74,75 +74,106 @@ class Journal:
         lines = []
         while True:
             line = input("> ") 
-            if line.strip().lower() =='done':
+            if line.strip().lower() == 'done':
                 break
             lines.append(line)
         
-        entry_content = "\n". join(lines)
+        entry_content = "\n".join(lines)
 
         if not entry_content.strip():
-            print("\nx Empty entry. Not saved.")
+            print("\nEmpty entry. Not saved.")
+            return
+     
+        entry_num = existing_entries + 1
+        timestamp = now.strftime("%I:%M %p")
+
+        entry_text = f"\n## 📝 Entry {entry_num} - {timestamp}\n\n"
+        entry_text += f"**Prompt:** {prompt}\n\n"
+        entry_text += entry_content
+        entry_text += "\n\n---\n"
+
+        # Add to file
+        if file_path.exists():
+            # Append to existing file
+            current_content = file_path.read_text()
+            file_path.write_text(current_content + entry_text)
+        else:
+            # create new file with day header
+            day_header = f"# {full_date}\n"
+            file_path.write_text(day_header + entry_text)
+
+        # Stats
+        word_count = len(entry_content.split())
+        char_count = len(entry_content)
+
+        print()
+        print("Journal entrey saved!")
+        print(f" File: {file_path}")
+        print(f" Words: {word_count}")
+        print(f" Characters: {char_count}")
+        if existing_entries > 0:
+            print(f" Entry: {entry_num} of {entry_num} today")
+
+    
+    def list_entries(self, show_all=False):
+        """List all journal entries"""
+        print("="*80)
+        print("All journal entries")
+        print("="*80)
+        print()
+
+        # Retrieve all markdown files
+        entries = sorted(self.journal_dir.glob("*.md"), reverse=True)
+
+        if not entries:
+            print("No journal entries yet. Create one with 'journal.py new'")
             return
         
+        print(f"Total entries: {len(entries)}")
+        print()
+
+        # Show entries
+        limit = None if show_all else 7
+
+        print("Recent entries:" if not show_all else "All entries:")
+
+        for i, entry_file in enumerate (entries):
+            if limit and i >= limit:
+                break 
+
+            # Parse date from file name
+            date_str = entry_file.stem
+            try:
+                date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                day_name = date_obj.strftime("%A")
+            except:
+                day_name = "Unknown"
 
 
+            # Find context around match
+            content_lower = content.lower()
+            query_lower = query.lower()
+
+            index = content_lower.find(query_lower)
+
+            # Extract 50 characters before and after
+            start = max(0, index - 50)
+            end = min(len(content), index + len(query) + 50)
+            context = content(start:end)
 
 
+            # Clean up context
+            context = context.replace('\n', ' ').strip()
+            if start > 0:
+                context = "..." + context
+            if end < len(content):
+                context = context + "..."
 
-
-
-              
-
-
-# Check if file exists
-if file_path.exists():
-    content = file_pathe.read_text()
-else:
-    content = ""
-    
-
-# Write file
-file_path.write_text(content)
-
-# List all journal files
-entries = sorted(journal_dir.glob("*.md"))
-
-
-parser = argparse.ArgumentParser(description="AI Daily Journal")
-
-# Add subcommands
-subparsers = parser.add_subparsers(dest='command')
-
-# 'new' command'
-new_parser = subparsers.add_parser('new', help='Create new entry')
-
-# 'list' command 
-list_parser = subparsers.add_parser('list', help='List all entries')
-list_parser.add_argument('--all', action='store_true', help='Show all entries')
-
-# 'search' command 
-search_parser = subparsers.add_parser('search', help='Search entries')
-search_parser.add_argument('query', help='Search term')
-
-# 'open' command
-open_parser = subparsers.add_parser('open', help='Open entry')
-open_parser.add_argument('date', help='Date (YYY-MM-DD)')
-
-# Parse arguments
-args = parser.parse_args()
-if args.command == 'new': 
-    create_entry()
-elif args.command == 'list':
-    list_entries(show_all=args.all)
-elif args.command == 'search':
-    search_entries(args.query)
-elif args.command == 'open':
-    open_entry(args.date)
-
-
-prompt = random.choice(REFLECTION_PROMPTS)
-print(f"Reflection Prompt:\n\"{prompt}\"")
-
+                matches.append({
+                    'date': date_str,
+                    'day': day_name,
+                    'context': context
+                })
 
 
 
